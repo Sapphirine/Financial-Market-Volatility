@@ -1,0 +1,90 @@
+import datetime as datetime
+from dateutil import relativedelta
+import pysqlbuilder as pysql
+import time 
+import re
+import sys
+from joblib import Parallel, delayed
+import datetime as datetime
+import time
+import os
+import numpy as np
+import pandas as pd
+import gc
+from tables import * 
+from sklearn import cross_validation
+from sklearn import datasets, grid_search
+from sklearn import svm
+from sklearn.svm import SVR
+from sklearn.preprocessing import normalize
+from sklearn import preprocessing 
+from sklearn.externals import joblib
+from sklearn.metrics import r2_score
+import matplotlib.pyplot as plt
+from sklearn import neighbors
+if "C:\\projects\\source\\ScikitlearnRegression\\ScikitlearnRegression" not in sys.path:
+    sys.path.append("C:\\projects\\source\\ScikitlearnRegression\\ScikitlearnRegression")
+import constants as con
+import oracle_util as ora_util
+import cx_Oracle as ora
+import oraclepyTablesWrapper as OracleWrap    
+
+
+
+
+
+def crossValTrainSVR():
+        '''
+        Train SVR using grid search cross validation
+        and both linear and rbf kernels
+        store best model
+        '''
+        #--------------------------KMEANS REGRESSION----------------------------------
+        input = np.array(BkDataLayer.raw_data['raw_rec_df'][con.FEATURE_COLS_KMEANS])
+        target = np.array(BkDataLayer.raw_data['raw_rec_df'][con.OUTPUT_COL]).flatten()
+        #scale input such that each feature has zero mean and unit var
+        scaler = preprocessing.StandardScaler().fit(input)
+        input_normal = scaler.transform(input)
+
+        #input_normal = preprocessing.scale(input)
+        #for function of form y = f(x) split data into training and testing set
+        #for i in np.arange(con.NUM_RUNS):
+
+        x_train, x_test, y_train, y_test = cross_validation.train_test_split(input_normal, target, test_size = .10, random_state=42)
+
+        #run nearest neighbor regression model as well using euclidean distance
+        knn = neighbors.KNeighborsRegressor(n_neighbors=150, weights='distance')
+        knn_model = knn.fit(x_train,y_train)
+        y_predict = knn_model.predict(x_test)
+        r2_knn = r2_score(y_test,y_predict)
+
+        BkDataLayer.kmeans_models.append(knn_model)
+        joblib.dump({'KNN_MODEL':knn_model,'StandardScaler':scaler,'Testset':{'x_test': x_test,'y_test':y_test}}, con.KMEANS_MODEL_FILE, compress = 3)
+
+        #--------------------------NU SVR--------------------------------------------------------
+        input = np.array(BkDataLayer.raw_data['raw_rec_df'][con.FEATURE_COLS_SVR])
+        target = np.array(BkDataLayer.raw_data['raw_rec_df'][con.OUTPUT_COL]).flatten()
+        #scale input such that each feature has zero mean and unit var
+        scaler = preprocessing.StandardScaler().fit(input)
+        input_normal = scaler.transform(input)
+
+        #input_normal = preprocessing.scale(input)
+        #for function of form y = f(x) split data into training and testing set
+        #for i in np.arange(con.NUM_RUNS):
+
+        x_train, x_test, y_train, y_test = cross_validation.train_test_split(input_normal, target, test_size = .10, random_state=42)
+        SVR = svm.NuSVR()
+
+        CLF = grid_search.GridSearchCV(SVR,con.PARAM_GRID, cv = 2, verbose=1, n_jobs = 5, refit = True)
+        CLF.fit(x_train,y_train)
+        #evaluate resultant model from gridsearch using test set (not used to train hyperparameters!)
+        #returns the coeff of determination R^2 of the prediciton . 1.0 is best possible
+        #)1-u/v where u is regression sse's (y_true - y_pred)^2.sum() and v is residual sum of squares (y_true - y_true.mean())^2.sum()
+        score = CLF.score(x_test,y_test)
+
+        #store candidate model in list
+        BkDataLayer.svr_models.append(CLF)
+
+        joblib.dump({'SVR_MODEL':CLF.best_estimator_,'Score':CLF.best_score_,'Params':CLF.best_params_,'StandardScaler':scaler,
+                     'Testset':{'x_test': x_test,'y_test':y_test}}, con.SVR_MODEL_FILE,compress=3)
+        return
