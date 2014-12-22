@@ -461,6 +461,7 @@ Show algorithm and tools you have used to solve your problem.
 Random Forest
 K Means Regressions
 K Means Clustering
+
 Preprocessor:
 The pre-processing of the raw data is divided programmatically into several python modules
 and associated bash scripts. The first module employed on the data residing in a specific directory
@@ -477,6 +478,8 @@ KEY | CLOSING_PRICE | 60-DAY FUTURE VOLATILITY | 60-DAY PAST VOLATILITY etc .
 vol_mapred.sh runs the mapper and reducer using hadoop streaming jar and parameters set in mapred-site.xml to tweak
 the memory upwards that java has access to in the heap given the high memory usage in the reduce step.
 
+ Add Volatility_HIGH as a cut off for VIX over .25
+ 
  
 \section{Software Package Description}
 Describe the software package that is going to be open sourced. Show some screen shots of how user use it and or UI.
