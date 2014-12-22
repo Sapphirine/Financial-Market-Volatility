@@ -1,4 +1,4 @@
-VLM VIX_+1D PRD
+ 
 AUC = 0.18
 VLM
 AUC = 0.17

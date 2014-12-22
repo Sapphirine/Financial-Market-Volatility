@@ -36,3 +36,12 @@ AUC = 0.53
 confusion: [[375247.0, 3061.0], [0.0, 0.0]]
 entropy: [[-0.0, -0.0], [-4.8, -0.1]]
 14/12/22 03:02:42 INFO driver.MahoutDriver: Program took 1634 ms (Minutes: 0.02723333333333333)
+
+mahout trainlogistic --input /Volumes/Data/BigData/FinalProject/cluster/AIG_PRD_TRAINING_.csv --output ./model --target Volatile --types numeric --predictors VLM VIX_+1D PRD  --categories 2 --rate 1 --quiet --passes 100
+mahout runlogistic --input /Volumes/Data/BigData/FinalProject/cluster/AIG_PRD_TRAINING_.csv --model ./model --auc --confusion
+mahout trainlogistic --input /Volumes/Data/BigData/FinalProject/cluster/AIG_PRD_TRAINING_.csv --output ./model2 --target Volatile --types numeric --predictors VLM --categories 2 --rate 1 --quiet --passes 100
+mahout runlogistic --input /Volumes/Data/BigData/FinalProject/cluster/AIG_PRD_TRAINING_.csv --model ./model2 --auc --confusion
+mahout trainlogistic --input /Volumes/Data/BigData/FinalProject/cluster/AIG_PRD_TRAINING_.csv --output ./model3 --target Volatile --types numeric --predictors VIX_+1D --categories 2 --rate 1 --quiet --passes 100
+mahout runlogistic --input /Volumes/Data/BigData/FinalProject/cluster/AIG_PRD_TRAINING_.csv --model ./model3 --auc --confusion
+mahout trainlogistic --input /Volumes/Data/BigData/FinalProject/cluster/AIG_PRD_TRAINING_.csv --output ./model4 --target Volatile --types numeric --predictors PRD  --categories 2 --rate 1 --quiet --passes 100
+mahout runlogistic --input /Volumes/Data/BigData/FinalProject/cluster/AIG_PRD_TRAINING_.csv --model ./model4 --auc --confusion --quiet
